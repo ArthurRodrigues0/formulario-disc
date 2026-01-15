@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapeamento Comportamental DISC - Recovery/Soluções</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .transition-all { transition: all 0.3s ease; }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+        input[type="radio"]:checked + label {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <div id="app" class="max-w-3xl mx-auto px-4 py-8 md:py-12">
+        <!-- Tela Inicial -->
+        <div id="welcome-screen" class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <div class="mb-6 flex justify-center">
+                <div class="p-3 bg-blue-600 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 mb-4">MAPEAMENTO COMPORTAMENTAL – MODELO DISC</h1>
+            <p class="text-blue-600 font-semibold mb-8 uppercase tracking-wide">Aplicação em Call Center – Recovery | Reclame Aqui | Consumidor.gov | Núcleo de Soluções</p>
+            
+            <div class="text-left bg-slate-50 border-l-4 border-blue-500 p-6 mb-8">
+                <p class="text-slate-700 leading-relaxed mb-4">
+                    Este mapeamento comportamental tem como objetivo promover o autoconhecimento e aprimorar a comunicação, a tomada de decisão e o trabalho em equipe.
+                </p>
+                <p class="text-slate-700 leading-relaxed font-medium">
+                    Não se trata de avaliação psicológica, não possui qualquer vínculo com metas, promoções ou punições. Não existem perfis certos ou errados.
+                </p>
+            </div>
+
+            <button onclick="startTest()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg">
+                Começar Mapeamento
+            </button>
+        </div>
+
+        <!-- Tela do Questionário -->
+        <div id="questionnaire-screen" class="hidden">
+            <!-- Header do Teste -->
+            <div class="mb-8">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Progresso</span>
+                    <span id="progress-text" class="text-sm font-bold text-blue-600">Bloco 1 de 12</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full progress-bar" style="width: 8.33%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-10 mb-6">
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2">Instruções</h2>
+                    <p class="text-slate-600">Em cada grupo abaixo, selecione <strong>UMA</strong> opção que <strong>MAIS (+)</strong> te representa e <strong>UMA</strong> opção que <strong>MENOS (-)</strong> te representa.</p>
+                </div>
+
+                <div id="questions-container">
+                    <!-- Gerado via JS -->
+                </div>
+
+                <div id="error-message" class="hidden mt-4 text-red-500 font-medium flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Por favor, selecione exatamente uma opção (+) e uma opção (-).
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="nextBlock()" id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-lg transition-all shadow-md">
+                    Próximo Bloco
+                </button>
+            </div>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div id="result-screen" class="hidden animate-fade-in">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-blue-600 p-8 text-center text-white">
+                    <h2 class="text-2xl font-bold mb-2">Seu Perfil Predominante é:</h2>
+                    <div id="result-title" class="text-4xl font-black uppercase tracking-tighter">Carregando...</div>
+                </div>
+                
+                <div class="p-8 md:p-12">
+                    <div id="result-content" class="space-y-6">
+                        <!-- Gerado via JS -->
+                    </div>
+
+                    <div class="mt-12 pt-8 border-t border-slate-100 text-center text-slate-500 italic">
+                        "A diversidade de perfis fortalece o time. O objetivo é utilizar os pontos fortes de cada estilo e desenvolver ajustes sempre que necessário."
+                    </div>
+                    
+                    <button onclick="refazerTeste()" class="mt-8 w-full border-2 border-slate-200 text-slate-500 hover:bg-slate-50 font-semibold py-3 rounded-lg transition-all">
+                        Refazer Teste
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === Blocos de Perguntas ===
+        const blocks = [
+            { id: 1, phrases: [
+                { text: "Gosto de resolver problemas rapidamente", type: "D" },
+                { text: "Procuro manter um clima leve nas conversas", type: "I" },
+                { text: "Tenho paciência com clientes difíceis", type: "S" },
+                { text: "Analiso todas as regras antes de decidir", type: "C" }
+            ]},
+            { id: 2, phrases: [
+                { text: "Sou direto mesmo em situações delicadas", type: "D" },
+                { text: "Me comunico com facilidade e empatia", type: "I" },
+                { text: "Prefiro estabilidade e previsibilidade", type: "S" },
+                { text: "Evito erros e sigo normas com rigor", type: "C" }
+            ]},
+            { id: 3, phrases: [
+                { text: "Tomo decisões sob pressão", type: "D" },
+                { text: "Consigo convencer e negociar bem", type: "I" },
+                { text: "Escuto com atenção antes de agir", type: "S" },
+                { text: "Gosto de dados e informações claras", type: "C" }
+            ]},
+            { id: 4, phrases: [
+                { text: "Não gosto de perder tempo", type: "D" },
+                { text: "Gosto de trabalhar com pessoas", type: "I" },
+                { text: "Sou constante e confiável", type: "S" },
+                { text: "Sou detalhista e cuidadoso", type: "C" }
+            ]},
+            { id: 5, phrases: [
+                { text: "Enfrento conflitos sem dificuldade", type: "D" },
+                { text: "Busco reconhecimento pelo que faço", type: "I" },
+                { text: "Evito confrontos desnecessários", type: "S" },
+                { text: "Sigo processos mesmo sob pressão", type: "C" }
+            ]},
+            { id: 6, phrases: [
+                { text: "Gosto de desafios difíceis", type: "D" },
+                { text: "Sou otimista mesmo em reclamações graves", type: "I" },
+                { text: "Mantenho a calma em clientes exaltados", type: "S" },
+                { text: "Prefiro ter certeza antes de responder", type: "C" }
+            ]},
+            { id: 7, phrases: [
+                { text: "Sou firme nas decisões", type: "D" },
+                { text: "Crio conexão facilmente", type: "I" },
+                { text: "Sou leal à equipe", type: "S" },
+                { text: "Prezo pela qualidade do atendimento", type: "C" }
+            ]},
+            { id: 8, phrases: [
+                { text: "Ação é melhor que espera", type: "D" },
+                { text: "Comunicação é meu ponto forte", type: "I" },
+                { text: "Sou paciente e compreensivo", type: "S" },
+                { text: "Planejo antes de agir", type: "C" }
+            ]},
+            { id: 9, phrases: [
+                { text: "Gosto de autonomia", type: "D" },
+                { text: "Gosto de trabalhar em grupo", type: "I" },
+                { text: "Gosto de rotina bem definida", type: "S" },
+                { text: "Gosto de normas claras", type: "C" }
+            ]},
+            { id: 10, phrases: [
+                { text: "Foco em resultado", type: "D" },
+                { text: "Foco em relacionamento", type: "I" },
+                { text: "Foco em estabilidade", type: "S" },
+                { text: "Foco em precisão", type: "C" }
+            ]},
+            { id: 11, phrases: [
+                { text: "Lido bem com pressão e cobrança", type: "D" },
+                { text: "Lido bem com pessoas difíceis", type: "I" },
+                { text: "Lido bem com ritmo constante", type: "S" },
+                { text: "Lido bem com regras e controles", type: "C" }
+            ]},
+            { id: 12, phrases: [
+                { text: "Decido rápido", type: "D" },
+                { text: "Me expresso bem", type: "I" },
+                { text: "Sou colaborativo", type: "S" },
+                { text: "Sou criterioso", type: "C" }
+            ]}
+        ];
+
+        let currentBlockIndex = 0;
+        let scores = { D: 0, I: 0, S: 0, C: 0 };
+
+        function startTest() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('questionnaire-screen').classList.remove('hidden');
+            renderBlock();
+        }
+
+        function renderBlock() {
+            const block = blocks[currentBlockIndex];
+            const container = document.getElementById('questions-container');
+            
+            document.getElementById('progress-text').innerText = `Bloco ${currentBlockIndex + 1} de ${blocks.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentBlockIndex + 1) / blocks.length) * 100}%`;
+
+            let html = `
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="flex items-center text-xs font-bold text-slate-400 uppercase mb-2">
+                        <div class="flex-grow">Frase</div>
+                        <div class="w-16 text-center">Mais (+)</div>
+                        <div class="w-16 text-center">Menos (-)</div>
+                    </div>
+            `;
+
+            block.phrases.forEach((phrase, idx) => {
+                html += `
+                    <div class="flex items-center bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-all">
+                        <div class="flex-grow text-slate-700 font-medium">${phrase.text}</div>
+                        
+                        <div class="w-16 flex justify-center">
+                            <input type="radio" id="plus-${idx}" name="most" value="${phrase.type}" 
+                                class="w-6 h-6 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                onclick="validateSameRow(${idx}, 'most')">
+                        </div>
+                        
+                        <div class="w-16 flex justify-center">
+                            <input type="radio" id="minus-${idx}" name="least" value="${phrase.type}" 
+                                class="w-6 h-6 text-red-600 focus:ring-red-500 cursor-pointer"
+                                onclick="validateSameRow(${idx}, 'least')">
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+            document.getElementById('error-message').classList.add('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function validateSameRow(index, type) {
+            const opposite = type === 'most' ? 'minus' : 'plus';
+            const oppositeRadio = document.getElementById(`${opposite}-${index}`);
+            if (oppositeRadio.checked) {
+                oppositeRadio.checked = false;
+            }
+        }
+
+        function nextBlock() {
+            const mostSelected = document.querySelector('input[name="most"]:checked');
+            const leastSelected = document.querySelector('input[name="least"]:checked');
+
+            if (!mostSelected || !leastSelected) {
+                document.getElementById('error-message').classList.remove('hidden');
+                return;
+            }
+
+            scores[mostSelected.value] += 1;
+            scores[leastSelected.value] -= 1;
+
+            if (currentBlockIndex < blocks.length - 1) {
+                currentBlockIndex++;
+                renderBlock();
+            } else {
+                showResult();
+                enviarResultados(); // <<< Envia os resultados para o backend
+            }
+        }
+
+        function showResult() {
+            document.getElementById('questionnaire-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let predominant = 'D';
+            let maxScore = scores.D;
+            
+            for (const profile in scores) {
+                if (scores[profile] > maxScore) {
+                    maxScore = scores[profile];
+                    predominant = profile;
+                }
+            }
+
+            const profileData = {
+                'D': {
+                    title: "Perfil D – Dominância",
+                    content: `<div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
+                                <h3 class="font-bold text-blue-800 text-lg mb-2">Pontos fortes:</h3>
+                                <p class="text-blue-900">Agilidade, decisão rápida, enfrentamento de conflitos, foco em resultados.</p>
+                              </div>
+                              <div class="bg-amber-50 p-6 rounded-xl border-l-4 border-amber-500">
+                                <h3 class="font-bold text-amber-800 text-lg mb-2">Pontos de atenção:</h3>
+                                <p class="text-amber-900">Impaciência, comunicação excessivamente direta, risco de pular processos.</p>
+                              </div>`
+            },
+            'I': {
+                title: "Perfil I – Influência",
+                content: `<div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
+                            <h3 class="font-bold text-blue-800 text-lg mb-2">Pontos fortes:</h3>
+                            <p class="text-blue-900">Empatia, comunicação, negociação, humanização do atendimento.</p>
+                          </div>
+                          <div class="bg-amber-50 p-6 rounded-xl border-l-4 border-amber-500">
+                            <h3 class="font-bold text-amber-800 text-lg mb-2">Pontos de atenção:</h3>
+                            <p class="text-amber-900">Excesso de informalidade, promessas além do possível, dificuldade com regras.</p>
+                          </div>`
+            },
+            'S': {
+                title: "Perfil S – Estabilidade",
+                content: `<div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
+                            <h3 class="font-bold text-blue-800 text-lg mb-2">Pontos fortes:</h3>
+                            <p class="text-blue-900">Paciência, escuta ativa, controle emocional, constância.</p>
+                          </div>
+                          <div class="bg-amber-50 p-6 rounded-xl border-l-4 border-amber-500">
+                            <h3 class="font-bold text-amber-800 text-lg mb-2">Pontos de atenção:</h3>
+                            <p class="text-amber-900">Dificuldade com mudanças rápidas, evitação de confronto, sobrecarga emocional.</p>
+                          </div>`
+            },
+            'C': {
+                title: "Perfil C – Conformidade",
+                content: `<div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
+                            <h3 class="font-bold text-blue-800 text-lg mb-2">Pontos fortes:</h3>
+                            <p class="text-blue-900">Atenção a detalhes, normas, qualidade técnica, segurança jurídica.</p>
+                          </div>
+                          <div class="bg-amber-50 p-6 rounded-xl border-l-4 border-amber-500">
+                            <h3 class="font-bold text-amber-800 text-lg mb-2">Pontos de atenção:</h3>
+                            <p class="text-amber-900">Excesso de cautela, demora na tomada de decisão, comunicação excessivamente técnica.</p>
+                          </div>`
+            }};
+
+            const data = profileData[predominant];
+            document.getElementById('result-title').innerText = data.title;
+            document.getElementById('result-content').innerHTML = data.content;
+            window.scrollTo(0, 0);
+
+            scores.predominante = predominant; // adiciona o perfil predominante para enviar
+        }
+
+        function refazerTeste() {
+            location.reload();
+        }
+
+        // === Função para enviar os resultados para o Node.js/MySQL ===
+        function enviarResultados() {
+            fetch('http://localhost:3000/salvar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    usuario: 'Teste', // se quiser, depois você pode adicionar um campo para nome do usuário
+                    D: scores.D,
+                    I: scores.I,
+                    S: scores.S,
+                    C: scores.C,
+                    perfil: scores.predominante
+                })
+            })
+            .then(res => res.text())
+            .then(msg => console.log(msg))
+            .catch(err => console.error('Erro ao salvar no banco:', err));
+        }
+    </script>
+</body>
+</html>

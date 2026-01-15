@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Distribuição de Perfis DISC</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
+        <h1 class="text-2xl font-bold mb-6 text-center">Distribuição de Perfis DISC</h1>
+        <canvas id="distribuicaoChart" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        async function gerarGraficoDistribuicao() {
+            try {
+                // Faz fetch na rota do Node.js
+                const response = await fetch('/distribuicao-perfis');
+                const dados = await response.json();
+
+                // Prepara arrays para Chart.js
+                const labels = [];
+                const valores = [];
+                const cores = [];
+
+                dados.forEach(row => {
+                    labels.push(row.perfil);
+                    valores.push(row.total);
+
+                    switch(row.perfil) {
+                        case 'D': cores.push('rgba(255, 99, 132, 0.7)'); break;
+                        case 'I': cores.push('rgba(54, 162, 235, 0.7)'); break;
+                        case 'S': cores.push('rgba(255, 206, 86, 0.7)'); break;
+                        case 'C': cores.push('rgba(75, 192, 192, 0.7)'); break;
+                    }
+                });
+
+                const ctx = document.getElementById('distribuicaoChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Distribuição de Perfis',
+                            data: valores,
+                            backgroundColor: cores,
+                            borderColor: cores.map(c => c.replace('0.7','1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.parsed} pessoa(s)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (err) {
+                console.error('Erro ao gerar gráfico:', err);
+            }
+        }
+
+        // Chama a função ao carregar a página
+        gerarGraficoDistribuicao();
+    </script>
+</body>
+</html>
