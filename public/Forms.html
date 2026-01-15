@@ -1,112 +1,260 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Formulário DISC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapeamento Comportamental DISC</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    .box {
-      background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      width: 300px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #45a049;
-    }
-  </style>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.progress-bar { transition: width 0.5s ease-in-out; }
+</style>
 </head>
-<body>
 
-  <div class="box">
-    <h2>Teste DISC</h2>
+<body class="bg-slate-50 min-h-screen">
 
-    <form id="discForm">
-      <label>
-        <input type="radio" name="perfil" value="D" required>
-        Dominante (D)
-      </label><br><br>
+<div id="app" class="max-w-3xl mx-auto px-4 py-8">
 
-      <label>
-        <input type="radio" name="perfil" value="I">
-        Influente (I)
-      </label><br><br>
+<!-- TELA INICIAL -->
+<div id="welcome-screen" class="bg-white rounded-xl shadow p-8 text-center">
+<h1 class="text-3xl font-bold mb-4">MAPEAMENTO COMPORTAMENTAL – DISC</h1>
+<p class="text-slate-600 mb-6">
+Não existem perfis certos ou errados. Responda com sinceridade.
+</p>
+<button onclick="startTest()"
+class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-lg font-bold">
+Começar Mapeamento
+</button>
+</div>
 
-      <label>
-        <input type="radio" name="perfil" value="S">
-        Estável (S)
-      </label><br><br>
+<!-- QUESTIONÁRIO -->
+<div id="questionnaire-screen" class="hidden">
 
-      <label>
-        <input type="radio" name="perfil" value="C">
-        Consciente (C)
-      </label><br><br>
+<div class="mb-6">
+<div class="flex justify-between text-sm mb-2">
+<span>Progresso</span>
+<span id="progress-text"></span>
+</div>
+<div class="w-full bg-slate-200 rounded-full h-2">
+<div id="progress-bar" class="bg-blue-600 h-2 rounded-full progress-bar"></div>
+</div>
+</div>
 
-      <button type="submit">Enviar</button>
-    </form>
-  </div>
+<div class="bg-white rounded-xl shadow p-6">
+<div id="questions-container"></div>
 
-  <script>
-    document.getElementById('discForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
+<div id="error-message" class="hidden text-red-600 mt-4 font-semibold">
+Selecione exatamente uma opção (+) e uma (-).
+</div>
+</div>
 
-      const perfilSelecionado = document.querySelector('input[name="perfil"]:checked');
+<div class="mt-6 text-right">
+<button onclick="nextBlock()"
+class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg font-bold">
+Próximo Bloco
+</button>
+</div>
+</div>
 
-      if (!perfilSelecionado) {
-        alert('Selecione um perfil.');
-        return;
-      }
+<!-- RESULTADO -->
+<div id="result-screen" class="hidden">
+<div class="bg-white rounded-xl shadow p-8 text-center">
+<h2 class="text-xl font-bold mb-2">Seu perfil predominante é:</h2>
+<div id="result-title" class="text-3xl font-black text-blue-600 mb-6"></div>
+<div id="result-content" class="text-slate-700"></div>
 
-      const perfil = perfilSelecionado.value;
+<button onclick="refazerTeste()"
+class="mt-8 border px-6 py-2 rounded-lg">
+Refazer teste
+</button>
+</div>
+</div>
 
-      try {
-        const resposta = await fetch('/salvar', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ perfil })
-        });
+</div>
 
-        if (resposta.ok) {
-          alert('Resposta enviada com sucesso!');
-          document.getElementById('discForm').reset();
-        } else {
-          alert('Erro ao enviar resposta.');
-        }
+<script>
+/* ================= BLOCOS DISC (12) ================= */
 
-      } catch (erro) {
-        console.error(erro);
-        alert('Erro de conexão com o servidor.');
-      }
-    });
-  </script>
+const blocks = [
+{ phrases: [
+{ text: "Gosto de resolver problemas rapidamente", type: "D" },
+{ text: "Procuro manter um clima leve nas conversas", type: "I" },
+{ text: "Tenho paciência com clientes difíceis", type: "S" },
+{ text: "Analiso todas as regras antes de decidir", type: "C" }
+]},
+{ phrases: [
+{ text: "Sou direto mesmo em situações delicadas", type: "D" },
+{ text: "Me comunico com facilidade e empatia", type: "I" },
+{ text: "Prefiro estabilidade e previsibilidade", type: "S" },
+{ text: "Evito erros e sigo normas com rigor", type: "C" }
+]},
+{ phrases: [
+{ text: "Tomo decisões sob pressão", type: "D" },
+{ text: "Consigo convencer e negociar bem", type: "I" },
+{ text: "Escuto com atenção antes de agir", type: "S" },
+{ text: "Gosto de dados e informações claras", type: "C" }
+]},
+{ phrases: [
+{ text: "Não gosto de perder tempo", type: "D" },
+{ text: "Gosto de trabalhar com pessoas", type: "I" },
+{ text: "Sou constante e confiável", type: "S" },
+{ text: "Sou detalhista e cuidadoso", type: "C" }
+]},
+{ phrases: [
+{ text: "Enfrento conflitos sem dificuldade", type: "D" },
+{ text: "Busco reconhecimento", type: "I" },
+{ text: "Evito confrontos desnecessários", type: "S" },
+{ text: "Sigo processos mesmo sob pressão", type: "C" }
+]},
+{ phrases: [
+{ text: "Gosto de desafios difíceis", type: "D" },
+{ text: "Sou otimista", type: "I" },
+{ text: "Mantenho a calma", type: "S" },
+{ text: "Prefiro ter certeza antes de responder", type: "C" }
+]},
+{ phrases: [
+{ text: "Sou firme nas decisões", type: "D" },
+{ text: "Crio conexão facilmente", type: "I" },
+{ text: "Sou leal à equipe", type: "S" },
+{ text: "Prezo pela qualidade", type: "C" }
+]},
+{ phrases: [
+{ text: "Ação é melhor que espera", type: "D" },
+{ text: "Comunicação é meu ponto forte", type: "I" },
+{ text: "Sou paciente", type: "S" },
+{ text: "Planejo antes de agir", type: "C" }
+]},
+{ phrases: [
+{ text: "Gosto de autonomia", type: "D" },
+{ text: "Trabalho bem em grupo", type: "I" },
+{ text: "Gosto de rotina", type: "S" },
+{ text: "Gosto de normas claras", type: "C" }
+]},
+{ phrases: [
+{ text: "Foco em resultado", type: "D" },
+{ text: "Foco em relacionamento", type: "I" },
+{ text: "Foco em estabilidade", type: "S" },
+{ text: "Foco em precisão", type: "C" }
+]},
+{ phrases: [
+{ text: "Lido bem com pressão", type: "D" },
+{ text: "Lido bem com pessoas", type: "I" },
+{ text: "Lido bem com rotina", type: "S" },
+{ text: "Lido bem com regras", type: "C" }
+]},
+{ phrases: [
+{ text: "Decido rápido", type: "D" },
+{ text: "Me expresso bem", type: "I" },
+{ text: "Sou colaborativo", type: "S" },
+{ text: "Sou criterioso", type: "C" }
+]}
+];
+
+let currentBlockIndex = 0;
+let scores = { D: 0, I: 0, S: 0, C: 0 };
+
+/* ================= FUNÇÕES ================= */
+
+function startTest() {
+document.getElementById('welcome-screen').classList.add('hidden');
+document.getElementById('questionnaire-screen').classList.remove('hidden');
+renderBlock();
+}
+
+function renderBlock() {
+const block = blocks[currentBlockIndex];
+const container = document.getElementById('questions-container');
+
+document.getElementById('progress-text').innerText =
+`Bloco ${currentBlockIndex + 1} de ${blocks.length}`;
+
+document.getElementById('progress-bar').style.width =
+`${((currentBlockIndex + 1) / blocks.length) * 100}%`;
+
+let html = '';
+block.phrases.forEach((p, i) => {
+html += `
+<div class="flex justify-between items-center border p-3 rounded mb-2">
+<span>${p.text}</span>
+<div>
+<input type="radio" name="most" value="${p.type}"> +
+<input type="radio" name="least" value="${p.type}"> -
+</div>
+</div>`;
+});
+container.innerHTML = html;
+document.getElementById('error-message').classList.add('hidden');
+}
+
+function nextBlock() {
+const most = document.querySelector('input[name="most"]:checked');
+const least = document.querySelector('input[name="least"]:checked');
+
+if (!most || !least) {
+document.getElementById('error-message').classList.remove('hidden');
+return;
+}
+
+scores[most.value]++;
+scores[least.value]--;
+
+if (currentBlockIndex < blocks.length - 1) {
+currentBlockIndex++;
+renderBlock();
+} else {
+showResult();
+enviarResultados();
+}
+}
+
+function showResult() {
+document.getElementById('questionnaire-screen').classList.add('hidden');
+document.getElementById('result-screen').classList.remove('hidden');
+
+let perfil = 'D';
+let maior = scores.D;
+
+for (let p in scores) {
+if (scores[p] > maior) {
+maior = scores[p];
+perfil = p;
+}
+}
+
+scores.predominante = perfil;
+
+document.getElementById('result-title').innerText = perfil;
+document.getElementById('result-content').innerText =
+`D=${scores.D} | I=${scores.I} | S=${scores.S} | C=${scores.C}`;
+}
+
+function refazerTeste() {
+location.reload();
+}
+
+/* ================= ENVIO PARA O BACKEND ================= */
+
+function enviarResultados() {
+fetch('/salvar', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+usuario: 'Anônimo',
+D: scores.D,
+I: scores.I,
+S: scores.S,
+C: scores.C,
+perfil: scores.predominante
+})
+})
+.then(res => res.text())
+.then(msg => console.log(msg))
+.catch(err => console.error(err));
+}
+</script>
 
 </body>
 </html>
