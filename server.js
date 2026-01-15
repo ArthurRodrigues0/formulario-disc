@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const mysql = require("mysql2");
+const { Pool } = require("pg");
 
 const app = express();
 
@@ -11,21 +11,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // =======================
-// CONEXÃO COM MYSQL
+// POSTGRES CONNECTION
 // =======================
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "forms"
-});
-
-connection.connect(err => {
-  if (err) {
-    console.error("Erro ao conectar no MySQL:", err);
-  } else {
-    console.log("MySQL conectado!");
-  }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
 });
 
 // =======================
@@ -40,45 +30,45 @@ app.get("/grafico", (req, res) => {
 });
 
 // =======================
-// API - SALVAR FORMULÁRIO
+// SALVAR FORMULÁRIO
 // =======================
-app.post("/salvar", (req, res) => {
+app.post("/salvar", async (req, res) => {
   const { nome, perfil } = req.body;
 
-  const sql = "INSERT INTO respostas_disc (nome, perfil) VALUES (?, ?)";
-  connection.query(sql, [nome, perfil], err => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ erro: "Erro ao salvar" });
-    }
+  try {
+    await pool.query(
+      "INSERT INTO respostas_disc (nome, perfil) VALUES ($1, $2)",
+      [nome, perfil]
+    );
     res.json({ ok: true });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao salvar" });
+  }
 });
 
 // =======================
-// API - DADOS DO GRÁFICO
+// DADOS DO GRÁFICO
 // =======================
-app.get("/api/perfis", (req, res) => {
-  const sql = `
-    SELECT perfil, COUNT(*) AS total
-    FROM respostas_disc
-    GROUP BY perfil
-  `;
+app.get("/api/perfis", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT perfil, COUNT(*) AS total
+      FROM respostas_disc
+      GROUP BY perfil
+    `);
 
-  connection.query(sql, (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ erro: "Erro no banco" });
-    }
-    res.json(results);
-  });
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro no banco" });
+  }
 });
 
 // =======================
 // SERVER
 // =======================
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log("Servidor Online na porta " + PORT);
 });
