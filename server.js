@@ -90,6 +90,22 @@ app.post('/salvar', (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/admin/limpar-testes', async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      "DELETE FROM respostas WHERE usuario = 'Teste'"
+    );
+
+    res.json({
+      ok: true,
+      apagados: resultado.rowCount
+    });
+  } catch (erro) {
+    console.error(erro);
+    res.status(500).json({ erro: 'Erro ao limpar testes' });
+  }
+});
+
 
 
 
