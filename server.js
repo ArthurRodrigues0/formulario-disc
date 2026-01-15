@@ -23,3 +23,19 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor Online na porta " + PORT);
 });
+app.get("/api/perfis", (req, res) => {
+  const sql = `
+    SELECT perfil, COUNT(*) as total
+    FROM respostas_disc
+    GROUP BY perfil
+  `;
+
+  connection.query(sql, (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ erro: "Erro no banco" });
+    }
+    res.json(results);
+  });
+});
+
