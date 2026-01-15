@@ -84,4 +84,10 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor Online na porta " + PORT);
 });
+app.post('/salvar', (req, res) => {
+  console.log('CHEGOU AQUI');
+  console.log(req.body);
+  res.send('ok');
+});
+
 
