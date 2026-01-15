@@ -90,7 +90,8 @@ app.post('/salvar', (req, res) => {
   res.json({ ok: true });
 });
 
-await pool.query('TRUNCATE TABLE respostas RESTART IDENTITY');
+
+
 
 
 
