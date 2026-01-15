@@ -1,78 +1,90 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Distribuição de Perfis DISC</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <title>Resultado DISC - Gráfico</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 500px;
+      background: #020617;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-        <h1 class="text-2xl font-bold mb-6 text-center">Distribuição de Perfis DISC</h1>
-        <canvas id="distribuicaoChart" width="400" height="400"></canvas>
-    </div>
+<body>
 
-    <script>
-        async function gerarGraficoDistribuicao() {
-            try {
-                // Faz fetch na rota do Node.js
-                const response = await fetch('/distribuicao-perfis');
-                const dados = await response.json();
+  <div class="container">
+    <h1>Perfil DISC Dominante</h1>
+    <canvas id="grafico"></canvas>
+  </div>
 
-                // Prepara arrays para Chart.js
-                const labels = [];
-                const valores = [];
-                const cores = [];
-
-                dados.forEach(row => {
-                    labels.push(row.perfil);
-                    valores.push(row.total);
-
-                    switch(row.perfil) {
-                        case 'D': cores.push('rgba(255, 99, 132, 0.7)'); break;
-                        case 'I': cores.push('rgba(54, 162, 235, 0.7)'); break;
-                        case 'S': cores.push('rgba(255, 206, 86, 0.7)'); break;
-                        case 'C': cores.push('rgba(75, 192, 192, 0.7)'); break;
-                    }
-                });
-
-                const ctx = document.getElementById('distribuicaoChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Distribuição de Perfis',
-                            data: valores,
-                            backgroundColor: cores,
-                            borderColor: cores.map(c => c.replace('0.7','1')),
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.label}: ${context.parsed} pessoa(s)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-            } catch (err) {
-                console.error('Erro ao gerar gráfico:', err);
-            }
+  <script>
+    fetch("/api/perfis")
+      .then(response => response.json())
+      .then(dados => {
+        if (!dados || dados.length === 0) {
+          alert("Nenhum dado encontrado no banco.");
+          return;
         }
 
-        // Chama a função ao carregar a página
-        gerarGraficoDistribuicao();
-    </script>
+        const labels = dados.map(item => item.perfil.toUpperCase());
+        const valores = dados.map(item => item.total);
+
+        const ctx = document.getElementById("grafico").getContext("2d");
+
+        new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: labels,
+            datasets: [{
+              data: valores,
+              backgroundColor: [
+                "#ef4444", // D
+                "#f97316", // I
+                "#22c55e", // S
+                "#3b82f6"  // C
+              ]
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                position: "bottom"
+              }
+            }
+          }
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao carregar gráfico");
+      });
+  </script>
+
 </body>
 </html>
