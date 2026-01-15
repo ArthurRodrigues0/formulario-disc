@@ -17,6 +17,18 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
 });
+pool.query(`
+  CREATE TABLE IF NOT EXISTS respostas_disc (
+    id SERIAL PRIMARY KEY,
+    nome TEXT,
+    perfil CHAR(1),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`).then(() => {
+  console.log("Tabela verificada/criada com sucesso");
+}).catch(err => {
+  console.error("Erro ao criar tabela:", err);
+});
 
 // =======================
 // ROTAS HTML
@@ -72,3 +84,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor Online na porta " + PORT);
 });
+
